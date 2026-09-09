@@ -1,5 +1,3 @@
 HK416 Skytetabeller PWA
-Version: 6.1
-Build: standalone-data
-Skytetabelldata er innebygd i index.html.
-Service worker bruker network-first for index.html.
+Version: 6.2
+Ny strukturert rapportlayout med tabeller, ammunisjonsregnskap og risikovurdering.

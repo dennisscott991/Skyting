@@ -1,4 +1,4 @@
-const CACHE='hk416-pwa-v6-1';
+const CACHE='hk416-pwa-v6-2';
 const STATIC=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
 
 self.addEventListener('install', event => {
