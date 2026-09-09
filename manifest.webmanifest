@@ -1,16 +1,23 @@
 {
-  "name": "Skytebane rapport",
-  "short_name": "Skytebane rapport",
+  "name": "HK416 Skytetabeller",
+  "short_name": "Skytetabeller",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#0f1511",
   "theme_color": "#152019",
   "lang": "nb",
-  "orientation": "any",
   "icons": [
-    {"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
-    {"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
   ],
   "scope": "./",
-  "description": "Skytebane rapport med HK416 skytetabeller, rapport og risikovurdering. Fungerer som PWA på iOS, iPadOS og Android."
+  "description": "Offline skytetabeller og rapportverktøy for HK416."
 }
