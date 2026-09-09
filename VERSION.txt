@@ -1,3 +1,4 @@
 HK416 Skytetabeller PWA
-Version: 6
-Build: 2026-09-09
+Version: 6 fixed
+PDF-delingsflyt gjenopprettet fra v5.
+Automatisk skudd igjen = utlevert - skutt.
