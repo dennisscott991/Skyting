@@ -1,4 +1,5 @@
 HK416 Skytetabeller PWA
-Version: 6 fixed
-PDF-delingsflyt gjenopprettet fra v5.
-Automatisk skudd igjen = utlevert - skutt.
+Version: 6 fixed/repaired
+JavaScript syntax kontrollert.
+PDF-delingsflyt beholdt.
+Skudd igjen beregnes automatisk = utlevert - skutt.
