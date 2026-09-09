@@ -1,3 +1,7 @@
 HK416 Skytetabeller PWA
-Version: 6.3
-Risikovurdering redesignet med ett risikokort per fare og tydelig restrisiko.
+Version: 6.4
+Endringer:
+- Risikovurdering eksporteres som Excel (.xlsx)
+- Mottakers e-postadresse er endret til Mottakers navn
+- Skytebaneleders rapport beholdes som PDF
+- Deling forsøker PDF + XLSX sammen, med fallback til PDF
