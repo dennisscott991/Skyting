@@ -1,5 +1,5 @@
 HK416 Skytetabeller PWA
-Version: 6 fixed/repaired
-JavaScript syntax kontrollert.
-PDF-delingsflyt beholdt.
-Skudd igjen beregnes automatisk = utlevert - skutt.
+Version: 6.1
+Build: standalone-data
+Skytetabelldata er innebygd i index.html.
+Service worker bruker network-first for index.html.
