@@ -16,9 +16,9 @@
 </style>
 </head>
 <body><div class="app">
-<header class="top"><h1>Skytebane rapport</h1><div class="sub">HK416 · skytetabeller · rapport og risikovurdering · PWA v6.2</div><div id="searchControls" class="controls"><input id="q" placeholder="Søk etter tabell eller øvelse…"><select id="level"><option value="" selected>Alle nivåer</option><option>Grunnleggende operatør</option><option>Operatør</option><option>Videregående operatør</option><option>Videregående / mørke</option></select></div></header>
+<header class="top"><h1>Skytebane rapport</h1><div class="sub">HK416 · skytetabeller · rapport og risikovurdering · PWA v6.3</div><div id="searchControls" class="controls"><input id="q" placeholder="Søk etter tabell eller øvelse…"><select id="level"><option value="" selected>Alle nivåer</option><option>Grunnleggende operatør</option><option>Operatør</option><option>Videregående operatør</option><option>Videregående / mørke</option></select></div></header>
 <div class="tabs"><button class="tab active" data-mode="tables">Skytetabeller</button><button class="tab" data-mode="tests">Standpunkttester</button><button class="tab" data-mode="report">Rapport</button></div>
-<div class="notice"><strong>Build 6.2</strong> · Hjelpevisning av offentlig tabellverk. Gjeldende bestemmelser, sikkerhetsregler og originaldokumentet har alltid forrang.</div>
+<div class="notice"><strong>Build 6.3</strong> · Hjelpevisning av offentlig tabellverk. Gjeldende bestemmelser, sikkerhetsregler og originaldokumentet har alltid forrang.</div>
 <main><section id="list"></section><section id="detail" class="detail"></section></main>
 <div class="footer">Skytebane rapport · PWA for iOS, iPadOS, Android og moderne nettlesere · utkast lagres lokalt</div></div>
 <script>
@@ -54,7 +54,38 @@ if(/makkerpar/.test(text))rows.push(['Flere skyttere i koordinert aktivitet','Kr
 if(/nærstrid/.test(text))rows.push(['Kortere avstander','Økt konsekvens ved retningsfeil eller rikosjett','Ekstra kontroll av målområde, sikkerhetsvinkler og standplassledelse.','Middels']);
 return rows}
 function nbDate(v){const d=v?new Date(v+'T12:00:00'):new Date();return d.toLocaleDateString('nb-NO',{day:'2-digit',month:'2-digit',year:'numeric'})}
-function riskText(r){return `RISIKOVURDERING\n\nDato: ${nbDate(r.date)}\nSted/bane: ${r.location||''}\nAvdeling/enhet: ${r.unit||''}\nAnsvarlig: ${r.instructor||''}\n\nAktiviteter:\n${reportItems(r).map((x,i)=>`${i+1}. ${x.label}`).join('\n')||'Ingen aktiviteter valgt.'}\n\nFARE | MULIG KONSEKVENS | TILTAK | RESTERENDE RISIKO\n${riskRows(r).map(x=>x.join(' | ')).join('\n')}\n\nLokale forhold / tilleggsvurdering:\n${r.risk_notes||'Ingen tillegg registrert.'}\n\nVurderingen er et støtteverktøy og må kontrolleres/godkjennes av ansvarlig person før gjennomføring.`}
+function riskText(r){
+const rows=riskRows(r);
+const levels={};
+rows.forEach(x=>levels[x[3]]=(levels[x[3]]||0)+1);
+const summary=Object.entries(levels).map(([k,v])=>`${k}: ${v}`).join('   |   ');
+const activities=reportItems(r).map((x,i)=>`${i+1}. ${x.label}`).join('\n')||'Ingen aktiviteter valgt.';
+const cards=rows.map((x,i)=>`
+${i+1}. ${x[0]}
+   Mulig konsekvens: ${x[1]}
+   Tiltak: ${x[2]}
+   Restrisiko: ${x[3]}
+`).join('\n');
+return `RISIKOVURDERING
+
+Dato: ${nbDate(r.date)}
+Sted/bane: ${r.location||''}
+Avdeling/enhet: ${r.unit||''}
+Ansvarlig: ${r.instructor||''}
+
+AKTIVITETER
+${activities}
+
+RISIKOOVERSIKT
+${summary||'Ingen risikoforhold registrert.'}
+
+IDENTIFISERTE RISIKOFORHOLD
+${cards}
+
+LOKALE FORHOLD / TILLEGGSVURDERING
+${r.risk_notes||'Ingen tillegg registrert.'}
+
+Vurderingen er et støtteverktøy og må kontrolleres/godkjennes av ansvarlig person før gjennomføring.`}
 function calcRoundsRemaining(r){
   const issued = Number(r.rounds_issued);
   const fired = Number(r.rounds_fired);
@@ -94,6 +125,59 @@ ${r.deviations||'Ingen registrerte.'}
 TILTAK / OPPFØLGING
 ${r.actions||'Ingen registrerte.'}`}
 
+
+function reportHtml(r){
+  const rows=riskRows(r);
+  const activities=reportItems(r);
+  const riskRowsHtml=rows.map((x,i)=>`
+    <div class="risk-card">
+      <div class="risk-head"><span class="risk-no">${i+1}</span><strong>${esc(x[0])}</strong><span class="risk-level">${esc(x[3])}</span></div>
+      <div class="risk-grid">
+        <div><span class="small">Mulig konsekvens</span>${esc(x[1])}</div>
+        <div><span class="small">Tiltak</span>${esc(x[2])}</div>
+      </div>
+    </div>`).join('');
+  const activityRows=activities.map((x,i)=>`<tr><td>${i+1}</td><td>${esc(x.label)}</td></tr>`).join('');
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Skytebaneleders rapport</title><style>
+  @page{size:A4;margin:14mm}
+  body{font-family:Arial,Helvetica,sans-serif;color:#151515;font-size:10.5pt;line-height:1.4;margin:0}
+  h1{font-size:21pt;margin:0 0 2mm} h2{font-size:13pt;margin:7mm 0 2.5mm;border-bottom:1.5px solid #333;padding-bottom:1.5mm}
+  .muted{color:#666}.info{display:grid;grid-template-columns:1fr 1fr;gap:2mm 7mm}.box{border:1px solid #bbb;padding:2.5mm;border-radius:2mm}
+  .small{display:block;color:#666;text-transform:uppercase;font-size:7.5pt;margin-bottom:.8mm}
+  table{width:100%;border-collapse:collapse}th,td{border:1px solid #aaa;padding:2.2mm;text-align:left;vertical-align:top}th{background:#eee}
+  .ammo td,.ammo th{text-align:center}
+  .risk-card{border:1px solid #999;border-radius:2mm;margin:0 0 3mm;page-break-inside:avoid;overflow:hidden}
+  .risk-head{display:grid;grid-template-columns:8mm 1fr auto;gap:2mm;align-items:center;background:#eee;padding:2.5mm}
+  .risk-no{font-weight:bold}.risk-level{font-weight:bold;border:1px solid #999;border-radius:10mm;padding:1mm 2.5mm;background:white}
+  .risk-grid{display:grid;grid-template-columns:1fr 2fr;gap:0;border-top:1px solid #bbb}
+  .risk-grid>div{padding:2.5mm}.risk-grid>div+div{border-left:1px solid #bbb}
+  .note{border:1px solid #bbb;padding:3mm;min-height:12mm;white-space:pre-wrap}
+  .sig{display:grid;grid-template-columns:1fr 1fr;gap:15mm;margin-top:14mm}.sig div{border-top:1px solid #333;padding-top:2mm}
+  </style></head><body>
+  <h1>Skytebaneleders rapport</h1><div class="muted">HK416 · ${esc(nbDate(r.date))}</div>
+  <h2>1. Grunnopplysninger</h2>
+  <div class="info">
+    <div class="box"><span class="small">Sted / bane</span>${esc(r.location||'')}</div>
+    <div class="box"><span class="small">Avdeling / enhet</span>${esc(r.unit||'')}</div>
+    <div class="box"><span class="small">Ansvarlig</span>${esc(r.instructor||'')}</div>
+    <div class="box"><span class="small">Deltagere</span>${esc(r.participants||'')}</div>
+  </div>
+  <h2>2. Gjennomførte aktiviteter</h2>
+  <table><thead><tr><th style="width:10%">#</th><th>Tabell / øvelse</th></tr></thead><tbody>${activityRows||'<tr><td colspan="2">Ingen aktiviteter valgt.</td></tr>'}</tbody></table>
+  <h2>3. Ammunisjonsregnskap</h2>
+  <table class="ammo"><thead><tr><th>LOT</th><th>Utlevert</th><th>Skutt</th><th>Igjen</th></tr></thead>
+  <tbody><tr><td>${esc(r.lot_number||'')}</td><td>${esc(r.rounds_issued||'')}</td><td>${esc(r.rounds_fired||'')}</td><td><strong>${esc(String(calcRoundsRemaining(r)))}</strong></td></tr></tbody></table>
+  <h2>4. Resultat / avvik</h2>
+  <span class="small">Resultat / oppsummering</span><div class="note">${esc(r.result||'Ingen merknader.')}</div><br>
+  <span class="small">Avvik / merknader</span><div class="note">${esc(r.deviations||'Ingen registrerte avvik.')}</div><br>
+  <span class="small">Tiltak / oppfølging</span><div class="note">${esc(r.actions||'Ingen registrerte tiltak.')}</div>
+  <h2>5. Risikovurdering</h2>
+  ${riskRowsHtml}
+  <span class="small">Lokale forhold / tilleggsvurdering</span><div class="note">${esc(r.risk_notes||'Ingen tillegg registrert.')}</div>
+  <div class="sig"><div>Skytebaneleder / ansvarlig</div><div>Dato / signatur</div></div>
+  </body></html>`;
+}
+
 function combinedText(r){return `${reportText(r)}\n\n\n========================================\nRISIKOVURDERING KNYTTET TIL AKTIVITETEN\n========================================\n\n${riskText(r)}`}
 function emailBody(){return `Hei,\n\nVedlagt ligger Skytebaneleders rapport med risikovurdering for skytingen som ble gjennomført i dag.\n\nRapporten inneholder både den automatiske skyterapporten og den genererte risikovurderingen knyttet til aktiviteten.\n\nMed vennlig hilsen`}
 function pdfEscape(s){return String(s).replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)').replace(/[–—]/g,'-').replace(/•/g,'-').replace(/æ/g,'ae').replace(/ø/g,'o').replace(/å/g,'a').replace(/Æ/g,'AE').replace(/Ø/g,'O').replace(/Å/g,'A')}
@@ -116,7 +200,7 @@ function collect(){
   o.items=reportItems(o);
   saveReportObj(o);
   $('#preview').textContent=reportText(o);
-  $('#riskPreview').textContent=riskText(o);
+  $('#riskPreview').innerHTML=riskRows(o).map((x,i)=>`<div style="padding:10px 0;border-bottom:1px solid #3a493d"><strong>${i+1}. ${esc(x[0])}</strong><br><span class="hint">Konsekvens:</span> ${esc(x[1])}<br><span class="hint">Tiltak:</span> ${esc(x[2])}<br><span class="hint">Restrisiko:</span> <strong>${esc(x[3])}</strong></div>`).join('')+`<div style="padding-top:12px"><strong>Lokale forhold:</strong><br>${esc(o.risk_notes||'Ingen tillegg registrert.')}</div>`;
   const ac=$('#ammoCheck'); if(ac) ac.textContent=ammoControlText(o);
   return o
 }ids.forEach(k=>$('#r_'+k).addEventListener('input',collect));collect();document.querySelectorAll('.remove-item').forEach(b=>b.onclick=()=>removeReportItem(b.dataset.id));$('#addMoreBtn').onclick=()=>setMode('tables');$('#emailBtn').onclick=()=>{const o=collect();if(!o.email||!/^\S+@\S+\.\S+$/.test(o.email)){status('Skriv inn en gyldig e-postadresse først.');$('#r_email').focus();return}const subject=`Skytebaneleders rapport – ${nbDate(o.date)}`;window.location.href=`mailto:${encodeURIComponent(o.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody())}`};$('#shareFilesBtn').onclick=async()=>{const o=collect(),file=makeCombinedFile(o);if(!items.length){status('Legg til minst én tabell eller øvelse først.');return}const payload={title:`Skytebaneleders rapport – ${nbDate(o.date)}`,text:emailBody(),files:[file]};if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[file]}))){try{await navigator.share(payload);status('Velg ønsket e-postapp i delingsarket. PDF-filen skal følge med som vedlegg.')}catch(e){if(e.name!=='AbortError')status('Kunne ikke dele PDF direkte. Bruk «Last ned PDF» og legg den ved fra e-postappen.')}}else status('Denne nettleseren støtter ikke direkte fildeling. Bruk «Last ned PDF».')};$('#downloadBtn').onclick=()=>{const o=collect();downloadFile(makeCombinedFile(o));status('Skytebaneleders rapport med risikovurdering er opprettet som én PDF.')} ;$('#clearBtn').onclick=()=>{localStorage.removeItem(REPORT_KEY);renderReport()};function status(s){const el=$('#reportStatus');if(el)el.textContent=s}}

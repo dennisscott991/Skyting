@@ -1,3 +1,3 @@
 HK416 Skytetabeller PWA
-Version: 6.2
-Ny strukturert rapportlayout med tabeller, ammunisjonsregnskap og risikovurdering.
+Version: 6.3
+Risikovurdering redesignet med ett risikokort per fare og tydelig restrisiko.
